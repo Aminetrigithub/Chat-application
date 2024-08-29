@@ -5,15 +5,41 @@ import { TabsContent } from "@radix-ui/react-tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { toast } from "sonner";
+import { apiClient } from "@/lib/api-client";
+import { SIGNUP_ROUTES } from "@/lib/constants";
 const Auth = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const validateSignUp = () => {
+  if(!email.length) {
+    toast.error("Please enter an email")
+      return false        
+    }
+    if(!password.length) {toast.warning("Please enter a password")
+      return false
+    }
+    if(confirmPassword !== password) {toast.warning("Password and confirm password do not match")
+      return false
+    }
+      return true
+    }
 
   const handleLogin  = async () => { }
-  const handleSignUp = async () => { }
+  const handleSignUp = async () => { 
+    if (validateSignUp()) {
+      try { 
+         await apiClient.post(SIGNUP_ROUTES,
+          {email, password}
+        );
+      } catch (error) {
+        console.log("Error", error);
+      }
+    }
+  }
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
       <div className="h-[80vh] w-[80vw] bg-white border-2 border-white text-opacity-90 shadow-2xl md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
@@ -45,7 +71,7 @@ const Auth = () => {
             <TabsContent className="flex flex-col gap-5 " value="signUp">
             <Input placeholder="Email" type="email" className="rounded-full p-6" value={email} onChange={(e) => setEmail(e.target.value)}  /> 
             <Input placeholder="Password" type="password" className="rounded-full p-6" value={password} onChange={(e) => setPassword(e.target.value)} /> 
-            <Input placeholder="Confirm Password" type="confirm password" className="rounded-full p-6" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /> 
+            <Input placeholder="Confirm Password" type="password" className="rounded-full p-6" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /> 
             <Button className="flex flex-col gap-5 " onClick={handleSignUp} >SignUp</Button>
             </TabsContent>
           </Tabs>
