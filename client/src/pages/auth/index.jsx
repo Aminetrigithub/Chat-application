@@ -7,12 +7,31 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
-import { SIGNUP_ROUTES } from "@/lib/constants";
+import { LOGIN_ROUTES, SIGNUP_ROUTES } from "@/lib/constants";
+import { useNavigate } from "react-router-dom";
+
+
 const Auth = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+ 
+  const navigate = useNavigate()
+
+
+  const validateLogin = () => {
+    if(!email.length) {
+      toast.error("Please enter an email")
+        return false        
+      }
+      if(!password.length) {toast.warning("Please enter a password")
+        return false
+      }
+        return true
+    }
+
 
   const validateSignUp = () => {
   if(!email.length) {
@@ -28,18 +47,30 @@ const Auth = () => {
       return true
     }
 
-  const handleLogin  = async () => { }
+
+  const handleLogin  = async () => { 
+if (validateLogin()){
+  const response = await apiClient.post(LOGIN_ROUTES,{email,password},{withCredentials: true});
+console.log(response)
+  if(response.profileSetup) navigate("/chat") 
+  else navigate("/profile")
+}
+
+  }
+
   const handleSignUp = async () => { 
     if (validateSignUp()) {
       try { 
-         await apiClient.post(SIGNUP_ROUTES,
-          {email, password}
-        );
-      } catch (error) {
+        const response =  await apiClient.post(SIGNUP_ROUTES, {email, password}, {withCredentials: true});
+        console.log(response);
+        if(response.status === 201) navigate("/profile") 
+        alert("Sign up successful");
+        } catch (error) {
         console.log("Error", error);
       }
     }
   }
+
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
       <div className="h-[80vh] w-[80vw] bg-white border-2 border-white text-opacity-90 shadow-2xl md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-3xl grid xl:grid-cols-2">
@@ -54,7 +85,7 @@ const Auth = () => {
           </p>
         </div>
         <div className="flex item-center justify-center w-full">
-          <Tabs className="w-3/4"> 
+          <Tabs className="w-3/4" defaultValue="login"> 
             <TabsList className="bg-transparent rounded-none w-full">
               <TabsTrigger value="login" className="data-[state=active]:bg-transparent text-black 
               text-opacity-90 border-b-2 rounded-none w-full data-[state=active]:font-semibold data-[state=active]:border-b-purple-500
@@ -64,8 +95,8 @@ const Auth = () => {
               p-3 transition-all duration-300">SignUp</TabsTrigger>
             </TabsList>
             <TabsContent className="flex flex-col gap-5 mt-10" value="login">
-              <Input placeholder="Email" type="email" className="rounded-full p-6"  /> 
-              <Input placeholder="Password" type="password" className="rounded-full p-6" /> 
+              <Input placeholder="Email" type="email" className="rounded-full p-6" value={email} onChange={(e) => setEmail(e.target.value)} /> 
+              <Input placeholder="Password" type="password" className="rounded-full p-6" value={password} onChange={(e) => setPassword(e.target.value)} /> 
               <Button className="flex flex-col gap-5 " onClick={handleLogin}>Login</Button>
             </TabsContent>
             <TabsContent className="flex flex-col gap-5 " value="signUp">
