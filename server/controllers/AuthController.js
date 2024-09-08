@@ -1,6 +1,6 @@
 import userModel from "../models/UserModel.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import { compare } from "bcrypt";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const createToken = (userId, userEmail) => {
@@ -12,8 +12,8 @@ const createToken = (userId, userEmail) => {
 export const signUp = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    if (email && password) {
-      const user = await userModel.create({ email, password });
+    if (email !== "" && password !== ""){
+      const user = await  userModel.create({ email, password });
       res.cookie("jwt", createToken(user._id, user.email), {
         maxAge: maxAge,
         secure: true,
@@ -23,9 +23,6 @@ export const signUp = async (req, res, next) => {
         user: {
           id: user.id,
           email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          image: user.image,
           profileSetup: user.profileSetup,
         },
       });
@@ -44,7 +41,7 @@ export const login = async (req, res, next) => {
     if (email && password) {
       const user = await userModel.findOne({ email });
       if (!user) return res.status(404).send("User not found");
-      const auth = bcrypt.compare(password, user.password);
+      const auth = compare(password, user.password);
       if (!auth) return res.status(400).send("email or password is incorrect");
       res.cookie("jwt", createToken(user._id, user.email), {
         maxAge: maxAge,
@@ -52,6 +49,7 @@ export const login = async (req, res, next) => {
         someSite: "none",
       });
       return res.status(200).json({
+        user: {
           id: user.id,
           email: user.email,
           password: user.password,
@@ -59,10 +57,12 @@ export const login = async (req, res, next) => {
           lastName: user.lastName,
           image: user.image,
           profileSetup: user.profileSetup,
-          color: user.color
+          color: user.color  
+        }
+          
       });
     } else {
-      return res.status(477).send("Email and password are required");
+      return res.status(400).send("Email and password are required");
     }
   } catch (error) {
     console.log(error);
