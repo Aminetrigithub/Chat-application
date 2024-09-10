@@ -59,13 +59,11 @@ const Auth = () => {
       if (response.data.profileSetup){ navigate("/chat")
       console.log("hellllllooo");
       console.log(response.data.profileSetup);
-      console.log("t3adda");
+      console.log("ta3mel login wel profileSetup -> true");
 
       }
       else { navigate("/profile");
-        // console.log("okkkkkk1")    
-      // console.log(response);
-      // console.log("okkkkkkk");}
+
     }
   };
 }
