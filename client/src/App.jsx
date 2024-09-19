@@ -1,4 +1,3 @@
-import "./App.css";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Auth from "./pages/auth";
 import Chat from "./pages/chat";
@@ -37,6 +36,7 @@ function App() {
           console.log(response)
           console.log(response.data.user)
           setUserInfo(response.data.user);
+          
         } else {
           console.log("**********************")
 
@@ -58,9 +58,9 @@ function App() {
     }
   }, [userInfo, setUserInfo]);
 
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
+  if (loading) {
+    return true;
+  }
 
   return (
     <>
