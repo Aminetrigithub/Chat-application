@@ -1,14 +1,14 @@
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { IoArrowBackCircle } from "react-icons/io5";
 import { useAppStore } from "@/store";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { colors, getColor } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api-client";
-import { UPDATE_PROFILE_ROUTE } from "@/lib/constants";
+import { ADD_PROFILE_IMAGE_ROUTE, UPDATE_PROFILE_ROUTE } from "@/lib/constants";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -20,6 +20,15 @@ const Profile = () => {
   const [hovered, setHovered] = useState(false);
   const [selectedColor, setSelectedColor] = useState(0);
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (userInfo.profileSetup) {
+      setFirstName(userInfo.firstName);
+      setLastName(userInfo.lastName);
+      setSelectedColor(userInfo.color);
+    }
+  }, [userInfo]);
 
   const validateProfile = () => {
     if (!firstName) {
@@ -58,21 +67,35 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
-    if (userInfo.profileSetup) {
-      setFirstName(userInfo.firstName);
-      setLastName(userInfo.lastName);
-      setSelectedColor(userInfo.color);
-    }
-  }, [userInfo]);
-
-const handleNavigate = () => {
+  const handleNavigate = () => {
   if (userInfo.profileSetup) { 
     navigate("/chat");
 }else {
 toast.error("Please setup your profile first.");
 }
+  }
+
+  const handleFileInputClick = () => {
+    fileInputRef.current.click()
+  }
+
+  const handleImageChange = async(event) => {
+    const file = event.target.files[0];
+    console.log(file);
+  if(file){
+    const formData = new FormData()
+    formData.append("profile-image", file) 
+    const response = await apiClient.post(ADD_PROFILE_IMAGE_ROUTE, formData, { withCredentials: true })
+  if(response.status === 200 && response.data.image){
+  setUserInfo({ ...userInfo, image: response.data.image })
+  toast.success("Profile image updated successfully.")
+  }
+  
+  
+  }
 }
+
+  const handleDeleteImage = () => {}
 
   return (
     <div className="bg-[#1b1c24] h-[100vh] white flex items-center justify-center flex-col gap-10 ">
@@ -101,7 +124,7 @@ toast.error("Please setup your profile first.");
               )}
             </Avatar>
             {hovered && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer">
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full cursor-pointer" onClick={image ? handleDeleteImage : handleFileInputClick}>
                 {image ? (
                   <FaTrash className="text-3xl text-white cursor-pointer" />
                 ) : (
@@ -109,6 +132,8 @@ toast.error("Please setup your profile first.");
                 )}
               </div>
             )}
+            <input type="file"  ref={fileInputRef} className="hidden" onChange={handleImageChange} name="profile-image" accept=".png, .jpg, .jpeg, .svg, .gif, .webp"></input>
+
           </div>
           <div className="flex min-w-32 md:min-w-32 flex-col gap-5 text-white items-center justify-center  ">
             <div className="w-full">
